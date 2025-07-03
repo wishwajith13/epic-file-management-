@@ -8,7 +8,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 public class fileUploadDTO {
-    private Long id;
+    private Long fileId;
     private String fileName;
     private String status;
     private String message;

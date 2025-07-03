@@ -1,5 +1,6 @@
 package com.Epic.File.Management.service;
 
+import com.Epic.File.Management.dto.fileUpload.fileRecodeDTO;
 import com.Epic.File.Management.dto.fileUpload.fileUploadDTO;
 import com.Epic.File.Management.entity.filesUploade;
 import com.Epic.File.Management.repo.FileManagementRepository;
@@ -57,12 +58,10 @@ public class FileManagementService {
     private fileUploadDTO processFile(MultipartFile file, Path dirPath) throws IOException {
         String originalName = Path.of(file.getOriginalFilename()).getFileName().toString();
 
-        if (!VALID_FILENAME_PATTERN.matcher(originalName).matches()) {
-            throw new IllegalArgumentException("Invalid file name: " + originalName);
-        }
-
         if (repository.findByFileName(originalName).isPresent()) {
             throw new IllegalArgumentException("Duplicate file: " + originalName);
+        }else if(!VALID_FILENAME_PATTERN.matcher(originalName).matches()) {
+            throw new IllegalArgumentException("Invalid file name: " + originalName);
         }
 
         Path targetPath = dirPath.resolve(originalName);
@@ -76,5 +75,40 @@ public class FileManagementService {
                 "SUCCESS",
                 "File uploaded successfully"
         );
+    }
+
+    public String deleteFile(String fileName) {
+        if (fileName == null || fileName.isBlank()) {
+            throw new IllegalArgumentException("File name must be provided.");
+        }
+
+        filesUploade fileRecord = repository.findByFileName(fileName)
+                .orElseThrow(() -> new IllegalArgumentException("No file found with name: " + fileName));
+
+        Path filePath = Paths.get(uploadDir).resolve(fileName);
+        try {
+            if (Files.exists(filePath)) {
+                Files.delete(filePath);
+            } else {
+                repository.delete(fileRecord);
+                return "File record deleted from database. File not found on disk.";
+            }
+        } catch (IOException e) {
+            throw new RuntimeException("Error deleting file from disk: " + e.getMessage(), e);
+        }
+
+        repository.delete(fileRecord);
+
+        return "File and database record deleted successfully.";
+    }
+
+    public List<fileRecodeDTO> getAllFiles() {
+        return repository.findAll()
+                .stream()
+                .map(file -> new fileRecodeDTO(
+                        file.getFileId(),
+                        file.getFileName()
+                ))
+                .collect(Collectors.toList());
     }
 }
