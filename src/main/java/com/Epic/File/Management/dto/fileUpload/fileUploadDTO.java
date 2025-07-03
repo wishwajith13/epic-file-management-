@@ -10,4 +10,6 @@ import lombok.NoArgsConstructor;
 public class fileUploadDTO {
     private Long id;
     private String fileName;
+    private String status;
+    private String message;
 }

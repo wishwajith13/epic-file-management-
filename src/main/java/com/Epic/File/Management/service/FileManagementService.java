@@ -22,7 +22,6 @@ public class FileManagementService {
 
     private final FileManagementRepository repository;
 
-    // Accept only letters, digits, dots, underscores, and hyphens
     private static final Pattern VALID_FILENAME_PATTERN = Pattern.compile("^[a-zA-Z0-9_.-]+$");
 
     public FileManagementService(FileManagementRepository repository) {
@@ -35,42 +34,47 @@ public class FileManagementService {
             Files.createDirectories(dirPath);
         }
 
-        // Process files in parallel
         return Arrays.stream(files)
                 .parallel()
-                .map(file -> processFile(file, dirPath))
+                .map(file -> processFileSafely(file, dirPath))
                 .collect(Collectors.toList());
     }
 
-    private fileUploadDTO processFile(MultipartFile file, Path dirPath) {
+    private fileUploadDTO processFileSafely(MultipartFile file, Path dirPath) {
+        try {
+            return processFile(file, dirPath);
+        } catch (Exception e) {
+            String originalName = file.getOriginalFilename();
+            return new fileUploadDTO(
+                    null,
+                    originalName,
+                    "FAILED",
+                    e.getMessage()
+            );
+        }
+    }
+
+    private fileUploadDTO processFile(MultipartFile file, Path dirPath) throws IOException {
         String originalName = Path.of(file.getOriginalFilename()).getFileName().toString();
 
-        // Validate filename
         if (!VALID_FILENAME_PATTERN.matcher(originalName).matches()) {
             throw new IllegalArgumentException("Invalid file name: " + originalName);
         }
 
-        // Check duplicates safely
-        synchronized (this) {
-            if (repository.findByFileName(originalName).isPresent()) {
-                throw new IllegalArgumentException("Duplicate file: " + originalName);
-            }
+        if (repository.findByFileName(originalName).isPresent()) {
+            throw new IllegalArgumentException("Duplicate file: " + originalName);
         }
 
-        // Save file to disk
-        try {
-            Path targetPath = dirPath.resolve(originalName);
-            Files.copy(file.getInputStream(), targetPath, StandardCopyOption.REPLACE_EXISTING);
-        } catch (IOException e) {
-            throw new RuntimeException("Error saving file: " + originalName, e);
-        }
+        Path targetPath = dirPath.resolve(originalName);
+        Files.copy(file.getInputStream(), targetPath, StandardCopyOption.REPLACE_EXISTING);
 
-        // Save metadata to DB
-        filesUploade saved;
-        synchronized (this) {
-            saved = repository.save(new filesUploade(originalName));
-        }
+        filesUploade saved = repository.save(new filesUploade(originalName));
 
-        return new fileUploadDTO(saved.getFileId(), saved.getFileName());
+        return new fileUploadDTO(
+                saved.getFileId(),
+                saved.getFileName(),
+                "SUCCESS",
+                "File uploaded successfully"
+        );
     }
 }
