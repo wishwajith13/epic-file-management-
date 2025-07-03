@@ -19,7 +19,7 @@ import java.util.stream.Collectors;
 public class FileManagementService {
 
     @Value("${file.upload-dir}")
-    private String uploadDir;
+    String uploadDir;
 
     private final FileManagementRepository repository;
 
