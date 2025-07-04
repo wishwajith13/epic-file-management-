@@ -20,8 +20,8 @@ public class fileRead {
     private String content;
 
     private String status;
-
-    public Long getId() {
-        return null;
-    }
+//
+//    public Long getId() {
+//        return null;
+//    }
 }

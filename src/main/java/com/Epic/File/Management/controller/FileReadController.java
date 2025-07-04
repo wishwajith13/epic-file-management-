@@ -3,6 +3,7 @@ package com.Epic.File.Management.controller;
 import com.Epic.File.Management.dto.fileRead.UpdateContentDTO;
 import com.Epic.File.Management.dto.fileRead.fileReadDTO;
 import com.Epic.File.Management.service.FileReadService;
+import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -33,6 +34,7 @@ public class FileReadController {
 
     @PatchMapping("/update-content/{readId}")
     public ResponseEntity<?> updateFileContent(
+            @Valid
             @PathVariable Long readId,
             @RequestBody UpdateContentDTO dto
     ) {

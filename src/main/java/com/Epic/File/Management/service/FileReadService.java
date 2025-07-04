@@ -25,15 +25,28 @@ public class FileReadService {
 
     private final FileReadRepository fileReadRepository;
     private final FileManagementRepository fileManagementRepository;
+    private final FileValueService fileValueService;
 
-    public FileReadService(FileReadRepository fileReadRepository, FileManagementRepository fileManagementRepository) {
+    public FileReadService(
+            FileReadRepository fileReadRepository,
+            FileManagementRepository fileManagementRepository,
+            FileValueService fileValueService) {
         this.fileReadRepository = fileReadRepository;
         this.fileManagementRepository = fileManagementRepository;
+        this.fileValueService = fileValueService;
     }
 
     @Async("fileProcessorExecutor")
-    @Transactional
     public void processFile(Long fileId, String fileName) {
+        // First step: create fileRead records
+        processFileReads(fileId, fileName);
+
+        // Second step: in separate async transaction, process fileValues
+        processFileValuesAsync(fileId);
+    }
+
+    @Transactional
+    public void processFileReads(Long fileId, String fileName) {
         Path path = Paths.get(uploadDir).resolve(fileName);
         filesUploade fileRecord = fileManagementRepository.findById(fileId).orElseThrow();
 
@@ -63,7 +76,6 @@ public class FileReadService {
                     failed++;
                 }
             }
-
             fileRecord.setStatus("COMP");
         } catch (Exception e) {
             fileRecord.setStatus("ERROR");
@@ -73,6 +85,11 @@ public class FileReadService {
         fileRecord.setSuccessCount(String.valueOf(success));
         fileRecord.setFailureCount(String.valueOf(failed));
         fileManagementRepository.save(fileRecord);
+    }
+
+    @Async("fileProcessorExecutor")
+    public void processFileValuesAsync(Long fileId) {
+        fileValueService.processFileValues(fileId);
     }
 
     public List<fileReadDTO> getAllFileReads() {
@@ -94,6 +111,9 @@ public class FileReadService {
         record.setContent(newContent);
         fileRead updated = fileReadRepository.save(record);
 
+        // Re-process single record
+        fileValueService.processSingleFileRead(updated);
+
         return new fileReadDTO(
                 updated.getReadId(),
                 updated.getFileId(),
@@ -101,6 +121,4 @@ public class FileReadService {
                 updated.getStatus()
         );
     }
-
-
 }

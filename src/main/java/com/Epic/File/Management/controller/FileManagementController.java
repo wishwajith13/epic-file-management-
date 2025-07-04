@@ -3,6 +3,7 @@ package com.Epic.File.Management.controller;
 import com.Epic.File.Management.dto.fileUpload.fileRecodeDTO;
 import com.Epic.File.Management.dto.fileUpload.fileUploadDTO;
 import com.Epic.File.Management.service.FileManagementService;
+import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -20,7 +21,7 @@ public class FileManagementController {
     }
 
     @PostMapping("/upload")
-    public ResponseEntity<?> uploadFiles(@RequestParam("files") MultipartFile[] files) {
+    public ResponseEntity<?> uploadFiles(@Valid @RequestParam("files") MultipartFile[] files) {
         try {
             List<fileUploadDTO> responses = service.storeFiles(files);
             return ResponseEntity.ok(responses);
