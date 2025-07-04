@@ -1,1 +1,4 @@
-test
+id,name,email,address,GPA
+45,Gihan,gihansupunadikaram@gmail.com,Gampola,3.23
+55,Supun,gihansupunadikaram@gmail.com,Gampola,2.23
+33,wije,wijedikaram@gmail.com,NULL,Kandy,3.23

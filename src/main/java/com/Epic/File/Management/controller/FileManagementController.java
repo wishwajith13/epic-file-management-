@@ -47,8 +47,14 @@ public class FileManagementController {
 
     @GetMapping("/all")
     public ResponseEntity<?> getAllFiles() {
-        List<fileRecodeDTO> files = service.getAllFiles();
-        return ResponseEntity.ok(files);
+        try {
+            List<fileRecodeDTO> files = service.getAllFiles();
+            return ResponseEntity.ok(files);
+        } catch (IllegalArgumentException ex) {
+            return ResponseEntity.badRequest().body(ex.getMessage());
+        } catch (Exception e) {
+            e.printStackTrace(); // Log the error
+            return ResponseEntity.internalServerError().body("Error retrieving files.");
+        }
     }
-
 }

@@ -1,1 +1,4 @@
-test3
+id,name,email,address,GPA
+67,Gimhan,gimhan@gmail.com,Ganegama,3.55
+21,Sujee,gihansujee@gmail.com,polonnaru,2.79
+38,wije perera,perera@gmail.com,kurunagala,2.33

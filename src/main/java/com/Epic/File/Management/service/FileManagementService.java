@@ -22,11 +22,13 @@ public class FileManagementService {
     String uploadDir;
 
     private final FileManagementRepository repository;
+    private final FileReadService fileReadService;
 
     private static final Pattern VALID_FILENAME_PATTERN = Pattern.compile("^[a-zA-Z0-9_.-]+$");
 
-    public FileManagementService(FileManagementRepository repository) {
+    public FileManagementService(FileManagementRepository repository, FileReadService fileReadService) {
         this.repository = repository;
+        this.fileReadService = fileReadService;
     }
 
     public List<fileUploadDTO> storeFiles(MultipartFile[] files) throws IOException {
@@ -60,7 +62,7 @@ public class FileManagementService {
 
         if (repository.findByFileName(originalName).isPresent()) {
             throw new IllegalArgumentException("Duplicate file: " + originalName);
-        }else if(!VALID_FILENAME_PATTERN.matcher(originalName).matches()) {
+        } else if (!VALID_FILENAME_PATTERN.matcher(originalName).matches()) {
             throw new IllegalArgumentException("Invalid file name: " + originalName);
         }
 
@@ -69,11 +71,14 @@ public class FileManagementService {
 
         filesUploade saved = repository.save(new filesUploade(originalName));
 
+        // Start async processing
+        fileReadService.processFile(saved.getFileId(), saved.getFileName());
+
         return new fileUploadDTO(
                 saved.getFileId(),
                 saved.getFileName(),
                 "SUCCESS",
-                "File uploaded successfully"
+                "File uploaded successfully. Processing started."
         );
     }
 
@@ -107,7 +112,13 @@ public class FileManagementService {
                 .stream()
                 .map(file -> new fileRecodeDTO(
                         file.getFileId(),
-                        file.getFileName()
+                        file.getFileName(),
+                        (String) file.getstatus(),
+                        file.getNumberOfRecords(),
+                        file.getSuccessCount(),
+                        file.getFailureCount(),
+                        file.getCreatedDate(),
+                        file.getLastModifiedDate()
                 ))
                 .collect(Collectors.toList());
     }
