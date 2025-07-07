@@ -1,5 +1,6 @@
 package com.Epic.File.Management.service;
 
+import com.Epic.File.Management.dto.fileValue.fileValueDTO;
 import com.Epic.File.Management.entity.fileRead;
 import com.Epic.File.Management.entity.fileValue;
 import com.Epic.File.Management.repo.FileReadRepository;
@@ -7,6 +8,9 @@ import com.Epic.File.Management.repo.FileValueRepository;
 import jakarta.transaction.Transactional;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
+
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 public class FileValueService {
@@ -79,5 +83,26 @@ public class FileValueService {
             read.setStatus("0"); // failure
             fileReadRepository.save(read);
         }
+    }
+
+    public List<fileValueDTO> getAllFileValues() {
+        List<fileValue> records = fileValueRepository.findAll();
+
+        if (records.isEmpty()) {
+            throw new IllegalStateException("No file value records found.");
+        }
+
+        return records.stream()
+                .map(value -> new fileValueDTO(
+                        value.getValueId(),
+                        value.getFileId(),
+                        value.getReadId(),
+                        value.getStudentId(),
+                        value.getName(),
+                        value.getEmail(),
+                        value.getAddress(),
+                        value.getGpa()
+                ))
+                .collect(Collectors.toList());
     }
 }

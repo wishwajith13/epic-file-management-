@@ -19,7 +19,7 @@ public class fileValue {
 
     private Long fileId;
 
-    private Long readId; // reference to fileRead
+    private Long readId;
 
     private String studentId;
 
