@@ -12,6 +12,7 @@ import java.io.IOException;
 import java.nio.file.*;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
@@ -58,7 +59,7 @@ public class FileManagementService {
     }
 
     private fileUploadDTO processFile(MultipartFile file, Path dirPath) throws IOException {
-        String originalName = Path.of(file.getOriginalFilename()).getFileName().toString();
+        String originalName = Path.of(Objects.requireNonNull(file.getOriginalFilename())).getFileName().toString();
 
         if (repository.findByFileName(originalName).isPresent()) {
             throw new IllegalArgumentException("Duplicate file: " + originalName);
@@ -113,7 +114,7 @@ public class FileManagementService {
                 .map(file -> new fileRecodeDTO(
                         file.getFileId(),
                         file.getFileName(),
-                        (String) file.getstatus(),
+                        file.getStatus(),
                         file.getNumberOfRecords(),
                         file.getSuccessCount(),
                         file.getFailureCount(),

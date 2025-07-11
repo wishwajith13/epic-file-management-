@@ -1,4 +1,4 @@
 id,name,email,address,GPA
 45,Gihan,gihansupunadikaram@gmail.com,Gampola,3.23
 55,Supun,gihansupunadikaram,Gampola,2.23
-33,wije,wijedikaram@gmail.com,sasdd,Kandy,3.23
+33,wije,wijedikaram@gmail.com,Kandy,3.23

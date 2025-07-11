@@ -1,5 +1,6 @@
 package com.Epic.File.Management.config;
 
+import com.Epic.File.Management.controller.AuthController;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -11,6 +12,13 @@ import java.util.Map;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
+
+    @ExceptionHandler(AuthController.InvalidCredentialsException.class)
+    public ResponseEntity<Map<String, String>> handleInvalidCredentials(AuthController.InvalidCredentialsException ex) {
+        Map<String, String> errorBody = new HashMap<>();
+        errorBody.put("error", ex.getMessage());
+        return new ResponseEntity<>(errorBody, HttpStatus.UNAUTHORIZED);
+    }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<Map<String, String>> handleValidationExceptions(

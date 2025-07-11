@@ -41,8 +41,4 @@ public class filesUploade {
     public filesUploade(String fileName) {
         this.fileName = fileName;
     }
-
-    public Object getstatus() {
-        return null;
-    }
 }
